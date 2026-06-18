@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>OceanXL: Large-scale Underwater 3D Gaussian Splatting via Block Partitioning and Adaptive Pruning</title>
+  <meta name="description" content="OceanXL is a fast, scalable framework for large-scale underwater 3D Gaussian Splatting. It combines Balanced Scene Partitioning, underwater-aware lightweight density control, and selective Difference-of-Gaussians activation to produce compact, high-fidelity reconstructions of large underwater scenes.">
+
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bulma@0.9.4/css/bulma.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/academicons/1.9.4/css/academicons.min.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Google+Sans:wght@400;500;700&family=Noto+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+
+  <style>
+    body, .title, .subtitle, .button, .stat-card .stat-number, .stat-card .stat-label, h1, h2, h3, h4, h5, h6, p, span, a, td, th, li, pre {
+      font-family: 'Google Sans', 'Noto Sans', sans-serif;
+    }
+    .publication-title { font-weight: 700; margin-top: 4rem; }
+    .hero.is-light { background-color: #ffffff; }
+    .author-block { font-weight: 300; margin-right: 0.5rem; }
+    .publication-authors a,
+    .publication-authors a:link,
+    .publication-authors a:visited { color: #2a7ac9 !important; }
+    .publication-authors a:hover { color: #0d4f8b !important; text-decoration: underline; }
+    .publication-links { margin-top: 2rem; }
+    .publication-links .link-block { margin: 0.25rem; display: inline-block; }
+    .publication-links .button { padding-left: 1.25rem; padding-right: 1.25rem; }
+    .stat-card { text-align: center; padding: 1.25rem 0.5rem; border-radius: 8px; background-color: #fafafa; }
+    .stat-card .stat-number { font-family: 'Google Sans', sans-serif; font-size: 2rem; font-weight: 700; color: #363636; }
+    .stat-card .stat-label { color: #6b6b6b; margin-top: 0.25rem; font-size: 0.95rem; }
+    .ours-row { background-color: #fff7e6 !important; font-weight: 600; }
+    .figure-placeholder { border: 1px dashed #c8c8c8; border-radius: 6px; padding: 3rem 1rem; text-align: center; color: #9a9a9a; background-color: #fafafa; }
+    pre.bibtex { background-color: #f5f5f5; padding: 1.25rem; border-radius: 6px; overflow-x: auto; font-size: 0.9rem; }
+    .benchmark-table tbody.group-divider tr:first-child td { border-top: 2px solid #b5b5b5; }
+    .benchmark-table th, .benchmark-table td { vertical-align: middle; }
+    .benchmark-table u { text-decoration: underline; text-underline-offset: 2px; }
+    .benchmark-table, .benchmark-table tbody, .benchmark-table thead, .benchmark-table tr, .benchmark-table th, .benchmark-table td { background-color: transparent !important; }
+    .table-wrap { background-color: #fafafa; padding: 1.25rem; border-radius: 6px; }
+    .section { padding: 2.5rem 1.5rem; }
+    .footer { padding: 2.5rem 1.5rem; }
+    .best { background-color: #ffd9d4 !important; font-weight: 600; }
+    .second { background-color: #ffe9c7 !important; }
+    .third { background-color: #fff6cc !important; }
+    .method-card { background-color: #fafafa; border-radius: 8px; padding: 1.5rem; height: 100%; }
+    .method-card .icon-top { color: #2a7ac9; font-size: 1.75rem; margin-bottom: 0.5rem; }
+    .scene-tag { display: inline-block; background-color: #eef4fb; color: #2a7ac9; border-radius: 999px; padding: 0.15rem 0.75rem; margin: 0.2rem; font-size: 0.85rem; font-weight: 500; }
+  </style>
+</head>
+<body>
+
+<section class="hero is-light is-small">
+  <div class="hero-body">
+    <div class="container is-max-desktop has-text-centered">
+      <h1 class="title is-2 publication-title">OceanXL: Large-scale Underwater 3D Gaussian Splatting<br>via Block Partitioning and Adaptive Pruning</h1>
+
+      <div class="is-size-4 publication-authors" style="margin-top: 2rem;">
+        <span class="author-block">Anonymous Author(s)</span>
+      </div>
+      <!-- 
+      <div class="is-size-6 publication-authors" style="margin-top: 0.5rem;">
+        <span class="author-block">Submission ID: 2122 &middot; ACM Transactions on Graphics, 2026</span>
+      </div>
+      -->
+      <!-- 
+      <div class="publication-links">
+        
+        <span class="link-block">
+          <a href="#" class="button is-dark is-rounded">
+            <span class="icon"><i class="ai ai-arxiv"></i></span>
+            <span>arXiv</span>
+          </a>
+        </span>
+       
+        <span class="link-block">
+          <a href="#" class="button is-dark is-rounded">
+            <span class="icon"><i class="fas fa-file-pdf"></i></span>
+            <span>Paper</span>
+          </a>
+        </span>
+        
+        <span class="link-block">
+          <a href="#" class="button is-dark is-rounded">
+            <span class="icon"><i class="fab fa-github"></i></span>
+            <span>Code</span>
+          </a>
+        </span>
+        
+        <span class="link-block">
+          <a href="#" class="button is-dark is-rounded">
+            <span class="icon"><i class="fas fa-database"></i></span>
+            <span>Dataset</span>
+          </a>
+        </span>
+      </div>
+    -->
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <img src="images/oceanxl_teaser.jpg" alt="OceanXL teaser: compact yet high-fidelity large-scale underwater reconstruction (Eiffel Tower 2016 scene)">
+    <p class="has-text-centered is-size-6" style="color: #6b6b6b; margin-top: 1rem;">
+      <strong>OceanXL</strong> achieves compact scene representations while preserving high-fidelity rendering quality.
+      Compared with the strongest baseline, BlockGaussian, OceanXL reconstructs the <em>Eiffel Tower 2016</em> wreck at
+      <strong>0.54&nbsp;GB</strong> versus <strong>2.7&nbsp;GB</strong> &mdash; a 5&times; smaller model with improved visual quality.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Abstract</h2>
+    <div class="content has-text-justified">
+      <p>
+        Underwater 3D reconstruction is critical for applications such as marine exploration, ecological monitoring, and
+        subsea infrastructure inspection, yet remains challenging at large scale due to light attenuation, scattering
+        effects, and the limited coverage of existing capture systems. While 3D Gaussian Splatting (3DGS) enables
+        high-quality real-time rendering, its direct application to large underwater scenes is still constrained by high
+        memory consumption and inefficient optimization over extensive spatial coverage.
+      </p>
+      <p>
+        In this work, we propose <strong>OceanXL</strong>, a fast and scalable reconstruction framework for large-scale
+        underwater environments based on 3DGS. We introduce a <strong>divide-and-conquer</strong> strategy that partitions
+        scenes into spatially coherent blocks for efficient optimization while preserving global geometric consistency. We
+        further propose an <strong>adaptive pruning scheme</strong> designed for underwater conditions, which removes
+        redundant primitives and produces compact representations without compromising visual fidelity. We additionally
+        introduce <strong>new large-scale underwater datasets</strong> containing diverse marine environments with extensive
+        spatial coverage. Experimental results demonstrate that OceanXL achieves superior efficiency and compactness
+        compared with existing approaches while maintaining high-fidelity rendering across large underwater scenes.
+      </p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">At a Glance</h2>
+    <div class="columns is-multiline" style="margin-top: 1rem;">
+      <div class="column is-3">
+        <div class="stat-card">
+          <div class="stat-number">5&times;</div>
+          <div class="stat-label">Smaller models than the strongest baseline</div>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="stat-card">
+          <div class="stat-number">1 GPU</div>
+          <div class="stat-label">Trains on a single RTX&nbsp;3090</div>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="stat-card">
+          <div class="stat-number">5</div>
+          <div class="stat-label">Large-scale underwater scenes evaluated</div>
+        </div>
+      </div>
+      <div class="column is-3">
+        <div class="stat-card">
+          <div class="stat-number">2</div>
+          <div class="stat-label">New datasets: Abyssal &amp; OceanXplore</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Contributions</h2>
+    <div class="columns is-multiline" style="margin-top: 1rem;">
+      <div class="column is-6">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-cubes"></i></div>
+          <p><strong>Scalable underwater 3DGS framework.</strong> A pipeline that combines adaptive scene decomposition
+          with compact Gaussian optimization for efficient large-scale underwater reconstruction.</p>
+        </div>
+      </div>
+      <div class="column is-6">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-sliders"></i></div>
+          <p><strong>Underwater-aware lightweight density control.</strong> Compensates for attenuation-induced
+          densification failures while progressively pruning redundant primitives &mdash; scalability without sacrificing
+          fidelity.</p>
+        </div>
+      </div>
+      <div class="column is-6">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-wand-magic-sparkles"></i></div>
+          <p><strong>Selective Difference-of-Gaussians (DoG) activation.</strong> Enhances local representational
+          capacity only in reconstruction-sensitive regions, enabling compact yet high-fidelity representations.</p>
+        </div>
+      </div>
+      <div class="column is-6">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-water"></i></div>
+          <p><strong>New large-scale underwater datasets.</strong> Spanning shipwrecks, coral reefs, and deep-sea
+          environments, with extensive experiments demonstrating improved efficiency&ndash;quality trade-offs.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Method</h2>
+    <div class="content has-text-justified">
+      <p>
+        The OceanXL pipeline begins with a sparse point cloud and camera poses estimated via Structure-from-Motion (SfM).
+        The scene is first decomposed into spatially balanced partitions using <strong>Balanced Scene Partitioning (BSP)</strong>,
+        which adaptively adjusts sub-scene sizes to distribute optimization complexity across reconstruction chunks. Each
+        partition is then reconstructed independently using <strong>Underwater-Pruning Accelerated Gaussian Splatting</strong>,
+        which combines lightweight underwater-aware density control with a compact 3D Difference-of-Gaussians (DoG)
+        representation. Finally, the reconstructed partitions are merged into a coherent global representation.
+      </p>
+    </div>
+    <img src="images/oceanxl_pipeline.png" style="width:100%; display:block; margin:auto;" alt="OceanXL pipeline overview">
+    <p class="has-text-centered is-size-6" style="color: #6b6b6b; margin-top: 1rem;">
+      Overview of the <strong>Underwater-Pruning Accelerated Gaussian Splatting</strong> pipeline. From the SfM points of
+      chunks generated by Balanced Scene Partitioning, Gaussian primitives are initialized and projected for fast
+      rasterization. <strong>Underwater Lightweight Density Control</strong> regulates the number of primitives through
+      <em>Underwater-Compensated Densification</em> (learnable depth-aware factors that compensate for attenuation) and
+      <em>Wise Adaptive Pruning</em> (removing redundant primitives while progressively introducing 3D-DoG components for
+      high-frequency detail).
+    </p>
+
+    <div class="columns is-multiline" style="margin-top: 2rem;">
+      <div class="column is-4">
+        <div class="method-card">
+          <h3 class="title is-5">Balanced Scene Partitioning</h3>
+          <p class="is-size-6">Rather than relying on fixed-size grids, BSP recursively splits a partition along its
+          longest spatial axis whenever its point count exceeds a threshold. A discrete search over candidate split
+          ratios minimizes the relative imbalance
+          <em>r&#42;</em>&nbsp;=&nbsp;arg&nbsp;min |N&#8321;&minus;N&#8322;|&nbsp;/&nbsp;max(N&#8321;,N&#8322;),
+          yielding partitions with balanced point counts and stable per-chunk optimization.</p>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="method-card">
+          <h3 class="title is-5">Underwater-Compensated Densification</h3>
+          <p class="is-size-6">Attenuation suppresses the 2D positional gradients that drive densification, starving
+          distant regions of primitives. OceanXL groups Gaussians into <em>near</em>, <em>mid</em>, and <em>far</em>
+          depth bands and assigns learnable densification weights <em>f<sub>mid</sub></em>, <em>f<sub>far</sub></em> &mdash;
+          no auxiliary network required at inference.</p>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="method-card">
+          <h3 class="title is-5">Wise Adaptive Pruning &amp; Selective DoG</h3>
+          <p class="is-size-6">Redundant, low-contribution primitives are progressively pruned. To retain fidelity,
+          compact DoG primitives (<em>DoG(x)&nbsp;=&nbsp;G(x)&minus;G<sub>p</sub>(x)</em>) are activated
+          <em>only</em> where the 2D positional gradient magnitude exceeds a threshold &mdash; sharpening detail-critical
+          regions without inflating model size.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Datasets</h2>
+    <div class="content has-text-justified">
+      <p>
+        Large-scale underwater datasets remain scarce due to the difficulty and cost of underwater data acquisition. We
+        introduce two complementary datasets and additionally evaluate on two large-scale public scenes.
+      </p>
+    </div>
+
+    <div class="columns">
+      <div class="column is-6">
+        <div class="method-card">
+          <h3 class="title is-5"><i class="fas fa-ship"></i>&nbsp; Abyssal <span class="is-size-6 has-text-grey">(image-based)</span></h3>
+          <p class="is-size-6"><strong>ISRO</strong> &mdash; 2,239 images of the <em>Tokai Maru</em> shipwreck near Guam,
+          captured with a Nikon Z7 through the NPS SeaArray photogrammetry system.</p>
+          <p class="is-size-6"><strong>KWAJ</strong> &mdash; 1,294 images of the Kwajalein Atoll <em>F4U-1 Corsair</em>
+          wreck near Mellu Island (Nikon D5, Nauticam housing, 14&ndash;24&nbsp;mm f/2.8 lens, 230&nbsp;mm dome). 8K
+          resolution with low-light conditions and sparse viewpoints.</p>
+        </div>
+      </div>
+      <div class="column is-6">
+        <div class="method-card">
+          <h3 class="title is-5"><i class="fas fa-fish"></i>&nbsp; OceanXplore <span class="is-size-6 has-text-grey">(video-based)</span></h3>
+          <p class="is-size-6"><strong>Komodo</strong> &mdash; GoPro footage near Komodo, Indonesia (2704&times;1520, 24&nbsp;fps,
+          60.77&nbsp;s). Clear water with abundant dynamic marine life.</p>
+          <p class="is-size-6"><strong>Amirantes1 / Amirantes2</strong> &mdash; Lumix GH5 near the Amirantes, Seychelles
+          (1920&times;1080, 24&nbsp;fps). Amirantes1 exhibits strong surface-driven illumination variation; Amirantes2
+          contains dense sea-fan structures of high geometric complexity.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="content has-text-centered" style="margin-top: 1.5rem;">
+      <p class="is-size-6 has-text-grey">Additional large-scale public scenes used for evaluation:</p>
+      <span class="scene-tag">Eiffel Tower 2016 (deep-sea wreck)</span>
+      <span class="scene-tag">Tabuhan P1 (Sweet Corals)</span>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Results</h2>
+    <div class="content has-text-justified">
+      <p>
+        We compare against large-scale 3DGS baselines &mdash; Hierarchical-GS, CityGaussian, Octree-GS, and BlockGaussian
+        &mdash; and an underwater-specific baseline UW-GS combined with our BSP strategy (UW-GS&#42;). All methods are kept
+        trainable under the same single-GPU setting (RTX&nbsp;3090). OceanXL achieves the <strong>smallest model sizes</strong>
+        and <strong>fastest training times</strong> across most datasets while maintaining competitive or superior
+        reconstruction quality.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+    <p class="has-text-centered is-size-6" style="color: #6b6b6b;">
+      <strong>Quantitative evaluation on five large-scale underwater scenes.</strong> Model size is in GB.
+      <span class="best">&nbsp;Best&nbsp;</span> <span class="second">&nbsp;2nd&nbsp;</span> <span class="third">&nbsp;3rd&nbsp;</span>
+      per metric within each scene. UW-GS&#42; = UW-GS combined with BSP; OOM = out-of-memory.
+    </p>
+    <div class="table-container">
+      <table class="table is-fullwidth is-narrow is-hoverable benchmark-table" style="font-size: 0.82rem;">
+        <thead>
+          <tr>
+            <th rowspan="2">Method</th>
+            <th colspan="2" class="has-text-centered">ISRO</th>
+            <th colspan="2" class="has-text-centered">KWAJ</th>
+            <th colspan="2" class="has-text-centered">Eiffel Tower 2016</th>
+            <th colspan="2" class="has-text-centered">Tabuhan P1</th>
+            <th colspan="2" class="has-text-centered">Komodo</th>
+          </tr>
+          <tr>
+            <th>Size&nbsp;&darr;</th><th>PSNR&nbsp;&uarr;</th>
+            <th>Size&nbsp;&darr;</th><th>PSNR&nbsp;&uarr;</th>
+            <th>Size&nbsp;&darr;</th><th>PSNR&nbsp;&uarr;</th>
+            <th>Size&nbsp;&darr;</th><th>PSNR&nbsp;&uarr;</th>
+            <th>Size&nbsp;&darr;</th><th>PSNR&nbsp;&uarr;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>UW-GS&#42; (+BSP)</td>
+            <td class="second">0.923</td><td>20.53</td>
+            <td>1.070</td><td>21.32</td>
+            <td>1.320</td><td>19.98</td>
+            <td>OOM</td><td>OOM</td>
+            <td>0.891</td><td>22.56</td>
+          </tr>
+          <tr>
+            <td>Hierarchical-GS</td>
+            <td>13.310</td><td>20.28</td>
+            <td>6.280</td><td>21.42</td>
+            <td>9.110</td><td>17.30</td>
+            <td>39.530</td><td>16.28</td>
+            <td>1.590</td><td>23.98</td>
+          </tr>
+          <tr>
+            <td>CityGaussian</td>
+            <td>2.050</td><td>21.42</td>
+            <td>1.090</td><td>21.90</td>
+            <td class="second">0.450</td><td>21.91</td>
+            <td class="best">3.800</td><td class="third">18.31</td>
+            <td>2.440</td><td class="third">28.09</td>
+          </tr>
+          <tr>
+            <td>Octree-GS</td>
+            <td class="third">1.420</td><td class="third">24.14</td>
+            <td class="second">0.373</td><td class="third">24.20</td>
+            <td class="best">0.184</td><td class="third">23.20</td>
+            <td>OOM</td><td>OOM</td>
+            <td class="second">0.181</td><td class="second">28.31</td>
+          </tr>
+          <tr>
+            <td>BlockGaussian</td>
+            <td>3.300</td><td class="second">24.43</td>
+            <td class="third">0.630</td><td class="best">27.47</td>
+            <td>2.700</td><td class="second">23.77</td>
+            <td class="third">17.700</td><td class="second">20.87</td>
+            <td class="third">0.410</td><td>26.00</td>
+          </tr>
+          <tr class="ours-row">
+            <td>OceanXL (Ours)</td>
+            <td class="best">0.317</td><td class="best">25.03</td>
+            <td class="best">0.204</td><td class="second">27.35</td>
+            <td class="third">0.545</td><td class="best">24.29</td>
+            <td class="second">8.440</td><td class="best">20.91</td>
+            <td class="best">0.166</td><td class="best">28.45</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="is-size-7" style="color: #6b6b6b; margin: 0.25rem 0 0 0;">
+      Full SSIM, LPIPS, and training-time figures are reported in the paper (Table&nbsp;1). On Eiffel Tower 2016, OceanXL
+      delivers the best PSNR while staying among the most compact models; on Komodo it is best on size and PSNR
+      simultaneously.
+    </p>
+    </div>
+
+    <h3 class="title is-5" style="margin-top: 3rem;">Qualitative Comparison</h3>
+    <img src="images/oceanxl_qualitative.png" style="width:100%; display:block; margin:auto;" alt="Qualitative comparison on Eiffel Tower 2016 and Tabuhan P1">
+    <p class="has-text-centered is-size-6" style="color: #6b6b6b; margin-top: 1rem;">
+      Qualitative comparison on (top) <em>Eiffel Tower 2016</em> and (bottom) <em>Tabuhan P1</em>. OceanXL recovers fine
+      underwater structures while maintaining a compact scene representation.
+    </p>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Ablation Study</h2>
+    <div class="content has-text-justified">
+      <p>
+        We validate each component on the <strong>Abyssal</strong> dataset with 3DGS as the backbone. Starting from a
+        BlockGaussian-style baseline, replacing the partitioning with <strong>BSP</strong> (V1) speeds up training by 33%
+        while improving quality. Adding <strong>Underwater-Compensated Densification</strong> (V2) further improves
+        PSNR/SSIM/LPIPS by compensating for attenuation-induced densification failures. Finally, integrating
+        <strong>Wise Adaptive Pruning</strong> (Ours) yields the best overall trade-off &mdash; improving reconstruction
+        while substantially reducing model size and training time.
+      </p>
+    </div>
+
+    <div class="table-wrap">
+    <div class="table-container">
+      <table class="table is-fullwidth is-narrow is-hoverable benchmark-table">
+        <thead>
+          <tr>
+            <th rowspan="2">Variant</th>
+            <th colspan="3" class="has-text-centered">Components</th>
+            <th colspan="3" class="has-text-centered">Reconstruction</th>
+            <th colspan="2" class="has-text-centered">Efficiency</th>
+          </tr>
+          <tr>
+            <th>BSP</th><th>UD</th><th>WAP</th>
+            <th>PSNR&nbsp;&uarr;</th><th>SSIM&nbsp;&uarr;</th><th>LPIPS&nbsp;&darr;</th>
+            <th>Time&nbsp;&darr;</th><th>Size&nbsp;&darr;</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>3DGS&#42; (+BSP)</td>
+            <td>&#10007;</td><td>&#10007;</td><td>&#10007;</td>
+            <td>22.40</td><td>0.719</td><td>0.420</td><td>43m07s</td><td class="second">0.670</td>
+          </tr>
+          <tr>
+            <td>V1</td>
+            <td>&#10003;</td><td>&#10007;</td><td>&#10007;</td>
+            <td>23.05</td><td>0.721</td><td>0.402</td><td class="second">31m17s</td><td class="best">0.593</td>
+          </tr>
+          <tr>
+            <td>V2</td>
+            <td>&#10003;</td><td>&#10003;</td><td>&#10007;</td>
+            <td class="best">26.36</td><td class="best">0.818</td><td class="second">0.334</td><td>37m13s</td><td>0.768</td>
+          </tr>
+          <tr class="ours-row">
+            <td>Ours</td>
+            <td>&#10003;</td><td>&#10003;</td><td>&#10003;</td>
+            <td class="second">26.19</td><td class="second">0.797</td><td class="best">0.351</td><td class="best">28m56s</td><td class="third">0.261</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="is-size-7" style="color: #6b6b6b; margin: 0.5rem 0 0 0;">
+      <strong>BSP</strong>: Balanced Scene Partitioning, <strong>UD</strong>: Underwater-Compensated Densification,
+      <strong>WAP</strong>: Wise Adaptive Pruning. Average PSNR/SSIM/LPIPS over the Abyssal dataset.
+    </p>
+    </div>
+  </div>
+</section>
+
+<section class="section" style="background-color: #fafafa;">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">Why It Matters</h2>
+    <div class="columns is-multiline" style="margin-top: 1rem;">
+      <div class="column is-4">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-vr-cardboard"></i></div>
+          <p><strong>Real-time graphics &amp; VR.</strong> The block-wise representation natively supports streaming and
+          level-of-detail; chunks can be independently loaded, swapped, or culled, with a few-hundred-megabyte per-chunk
+          footprint practical for consumer GPUs and head-mounted displays.</p>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-plug"></i></div>
+          <p><strong>Drop-in asset format.</strong> The lightweight density control needs no auxiliary network at
+          inference, integrating straightforwardly into existing splatting rasterizers and 3DGS pipelines used in film
+          and game production.</p>
+        </div>
+      </div>
+      <div class="column is-4">
+        <div class="method-card">
+          <div class="icon-top"><i class="fas fa-smog"></i></div>
+          <p><strong>Beyond underwater.</strong> Depth-banded densification compensation generalizes to other
+          visibility-degraded environments &mdash; foggy outdoor scenes, smoke-filled architectural spaces, and
+          atmospheric VFX backgrounds.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section">
+  <div class="container is-max-desktop">
+    <h2 class="title is-3 has-text-centered">BibTeX</h2>
+    <!-- TODO: replace with the final citation once accepted -->
+    <pre class="bibtex">@article{oceanxl2026,
+  title   = {OceanXL: Large-scale Underwater 3D Gaussian Splatting
+             via Block Partitioning and Adaptive Pruning},
+  author  = {Anonymous Author(s)},
+  journal = {ACM Transactions on Graphics},
+  volume  = {1},
+  number  = {1},
+  year    = {2026},
+  note    = {Submission ID: 2122}
+}</pre>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container is-max-desktop has-text-centered">
+    <p class="is-size-7">
+      Website template adapted from the
+      <a href="https://github.com/eliahuhorwitz/Academic-project-page-template">Academic Project Page Template</a>,
+      itself based on the <a href="https://nerfies.github.io">Nerfies</a> project page.
+      Released under
+      <a href="https://creativecommons.org/licenses/by-sa/4.0/">CC BY-SA 4.0</a>.
+    </p>
+  </div>
+</footer>
+
+</body>
+</html>
